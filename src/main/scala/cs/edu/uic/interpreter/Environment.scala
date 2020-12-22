@@ -1,11 +1,14 @@
 package cs.edu.uic.interpreter
 
+import scala.annotation.tailrec
+
 trait Environment {
 
   var bindings: List[Binding] = Nil
 
   def lookup(name: Name): Value = lookup(name, bindings)
 
+  @tailrec
   private def lookup(name: Name, search: List[Binding]): Value = {
     if (search eq Nil) throw new Error("Name " + name + " not found in the environment")
     if (search.head.name.equals(name)) return search.head.value

@@ -8,6 +8,6 @@ object Main {
   }
 
   def getInterpreter: Interpreter = {
-    new Interpreter();
+    new Interpreter()
   }
 }
