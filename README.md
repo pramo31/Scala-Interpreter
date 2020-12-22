@@ -1,6 +1,6 @@
-# Scala Based Interpreter
+# Scala Based cs.edu.uic.interpreter.Interpreter
 
-This is a simple - learn and have fun (A process of learning how a language works under the hood) - kind of Interpreter implemented in Scala to read/interpret a Custom Language supporting some basic features like Expressions, Statements, Continuations, Environments, Closure etc.
+This is a simple - learn and have fun (A process of learning how a language works under the hood) - kind of cs.edu.uic.interpreter.Interpreter implemented in Scala to read/interpret a Custom Language supporting some basic features like Expressions, Statements, Continuations, Environments, Closure etc.
 
 ## Language Features
 
