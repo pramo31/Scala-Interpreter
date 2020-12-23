@@ -32,7 +32,17 @@ class LexicalScopedEnvironment private(binding: Option[Binding], nextInScope: Op
     new LexicalScopedEnvironment(Some(b), Some(this))
   }
 
-  override def toString: String = "Environment{" + "bindings=" + bindings + '}'
+  override def toString: String = "LexicalScopedEnvironment{" + "bindings=" + bindings + '}'
 }
 
+
+class DynamicScopedEnvironment extends Environment {
+  def bind(name: Name, value: Value): DynamicScopedEnvironment = {
+    val b = new Binding(name, value)
+    bindings = List.concat(List(b), bindings)
+    this
+  }
+
+  override def toString: String = "DynamicScopedEnvironment{" + "bindings=" + bindings + '}'
+}
 

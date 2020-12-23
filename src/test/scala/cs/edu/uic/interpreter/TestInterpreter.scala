@@ -6,7 +6,8 @@ import org.scalatest.funsuite.AnyFunSuite
 class TestInterpreter extends AnyFunSuite with BeforeAndAfter {
 
   val interpreter: Interpreter = Main.getInterpreter
-  val environment = new LexicalScopedEnvironment()
+  val lexicalEnv = new LexicalScopedEnvironment()
+  val dynamicEnv = new DynamicScopedEnvironment()
 
   //function f(top,bot) :
   //  if (bot == 0) then 0 else top/bot
@@ -40,7 +41,7 @@ class TestInterpreter extends AnyFunSuite with BeforeAndAfter {
     // Output: IntValue{v=474}
     val theInt = 474
     val p1 = new IntConstant(theInt)
-    val value = interpreter.evaluate(p1, environment, functions).asInstanceOf[IntValue]
+    val value = interpreter.evaluate(p1, lexicalEnv, functions).asInstanceOf[IntValue]
     println("Result of P1 : " + value)
     assert(theInt == value.v)
   }
@@ -62,7 +63,7 @@ class TestInterpreter extends AnyFunSuite with BeforeAndAfter {
       new IntConstant(divisor)
     )
 
-    val value = interpreter.evaluate(p2, environment, functions).asInstanceOf[IntValue]
+    val value = interpreter.evaluate(p2, lexicalEnv, functions).asInstanceOf[IntValue]
     println("Result of P2 : " + value)
     val expected = (sum_one + sum_two) / divisor
     assert(expected == value.v)
@@ -90,7 +91,7 @@ class TestInterpreter extends AnyFunSuite with BeforeAndAfter {
       new IntConstant(comparator)
     )
 
-    val value = interpreter.evaluate(p3, environment, functions).asInstanceOf[BooleanValue]
+    val value = interpreter.evaluate(p3, lexicalEnv, functions).asInstanceOf[BooleanValue]
     println("Result of P3 : " + value)
     val expected = (sum_one + sum_two) / divisor == comparator
     assert(expected == value.b)
@@ -130,13 +131,13 @@ class TestInterpreter extends AnyFunSuite with BeforeAndAfter {
       )
     )
 
-    val value = interpreter.evaluate(p4, environment, functions).asInstanceOf[IntValue]
+    val value = interpreter.evaluate(p4, lexicalEnv, functions).asInstanceOf[IntValue]
     println("Result of P4 : " + value)
     val expected = sum_one + sum_two
     assert(expected == value.v)
   }
 
-  test("Test Variable Read and Write Expression") {
+  test("Test Variable Read and Write Expression in Lexical Scoped Environment") {
 
     // Constants, BinaryOperation, Comparison, Conditional Execution, Variable
     // Input: let bot = 3 in
@@ -184,6 +185,7 @@ class TestInterpreter extends AnyFunSuite with BeforeAndAfter {
       )
     )
 
+    val environment = lexicalEnv
     val value = interpreter.evaluate(p5, environment, functions).asInstanceOf[IntValue]
     println("Result of P5 : " + value)
     if (environment.isInstanceOf[LexicalScopedEnvironment]) {
@@ -194,6 +196,67 @@ class TestInterpreter extends AnyFunSuite with BeforeAndAfter {
       assert(expected == value.v)
     }
   }
+
+  test("Test Variable Read and Write Expression in Dynamic Scoped Environment") {
+
+    // Constants, BinaryOperation, Comparison, Conditional Execution, Variable
+    // Input: let bot = 3 in
+    //          (let bot = 2 in bot)
+    //          +
+    //          (if (bot == 0) then 474/0 else (400+74)/bot)
+    // Output: IntValue{v=160} or IntValue{v=239}
+    val val_one = 3
+    val val_two = 2
+    val sum = 474
+    val sum_one = 400
+    val sum_two = 74
+
+    val p5 = new LetExpression(
+      new Name("bot"),
+      new IntConstant(val_one),
+      new BinaryOperationExpression(
+        Operator.PLUS,
+        new LetExpression(
+          new Name("bot"),
+          new IntConstant(val_two),
+          new VariableExpression(new Name("bot"))
+        ),
+        new IfExpression(
+          new ComparisonExpression(
+            Type.EQ,
+            new VariableExpression(new Name("bot")),
+            new IntConstant(0)
+          ),
+          new BinaryOperationExpression(
+            Operator.DIV,
+            new IntConstant(sum),
+            new IntConstant(0)
+          ),
+          new BinaryOperationExpression(
+            Operator.DIV,
+            new BinaryOperationExpression(
+              Operator.PLUS,
+              new IntConstant(sum_one),
+              new IntConstant(sum_two)
+            ),
+            new VariableExpression(new Name("bot"))
+          )
+        )
+      )
+    )
+
+    val environment = dynamicEnv
+    val value = interpreter.evaluate(p5, environment, functions).asInstanceOf[IntValue]
+    println("Result of P5 : " + value)
+    if (environment.isInstanceOf[LexicalScopedEnvironment]) {
+      val expected = sum / val_one + val_two
+      assert(expected == value.v)
+    } else {
+      val expected = sum / val_two + val_two
+      assert(expected == value.v)
+    }
+  }
+
 
   test("Test Function Call Expression") {
 
@@ -245,9 +308,9 @@ class TestInterpreter extends AnyFunSuite with BeforeAndAfter {
       )
     )
 
-    val value = interpreter.evaluate(p6, environment, functions).asInstanceOf[IntValue]
+    val value = interpreter.evaluate(p6, lexicalEnv, functions).asInstanceOf[IntValue]
     println("Result of P6 : " + value)
-    if (environment.isInstanceOf[LexicalScopedEnvironment]) {
+    if (lexicalEnv.isInstanceOf[LexicalScopedEnvironment]) {
       val expected = (sum_one + sum_two) / val_one + val_two
       assert(expected == value.v)
     } else {

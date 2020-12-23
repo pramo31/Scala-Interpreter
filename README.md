@@ -16,6 +16,7 @@ This is a simple - learn and have fun (A process of learning how a language work
 
 - Environments
     - Lexical Scoped Environment
+	- Dynamic Scoped Environment
 
 
 ### Implementation's under Progress
@@ -23,10 +24,7 @@ This is a simple - learn and have fun (A process of learning how a language work
 - Expressions
     - Function Call Expression (First Class Functions)
     - Lambda Functions
-    - Throw Expression
-
-- Environments
-    - Dynamic Scoped Environment
+    - Throw Expression    
 
 - Statements
     - Return Statements
